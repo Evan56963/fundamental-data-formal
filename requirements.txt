@@ -1,3 +1,4 @@
 yfinance
 pyodbc
 python-dotenv
+fredapi
