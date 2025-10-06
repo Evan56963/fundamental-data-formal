@@ -94,26 +94,40 @@ def main():
     parser.add_argument('--crypto', action='store_true', help='加密貨幣')
     parser.add_argument('--forex', action='store_true', help='外匯')
     parser.add_argument('--futures', action='store_true', help='期貨')
+    parser.add_argument('--cpi', action='store_true', help='查詢美國CPI')
+    parser.add_argument('--nfp', action='store_true', help='查詢美國NFP')
     #parser.add_argument('--help-markets', action='store_true', help='顯示支援的市場類型')
     
     args = parser.parse_args()
-    
-    if args.help_markets:
-        print("支援的市場類型：")
-        print("  --tw      台股 (例: 2330)")
-        print("  --us      美股 (例: AAPL)")
-        print("  --two     台灣興櫃")
-        #print("  --etf     ETF")
-        #print("  --index   指數")
-        print("  --crypto  加密貨幣 (例: BTC)")
-        print("  --forex   外匯 (例: EURUSD)")
-        #print("  --futures 期貨")
+
+    # CPI/NFP 查詢 (優先處理)
+    if args.cpi:
+        service = FundamentalDataService()
+        try:
+            print("正在獲取美國CPI...")
+            cpi_data = service.fetch_and_store_cpi_us()
+            print(f"✓ 美國CPI最新資料: 日期={cpi_data['date']} 數值={cpi_data['value']}（指數）")
+            print("CPI已成功儲存")
+        except Exception as e:
+            print(f"✗ 美國CPI獲取失敗: {str(e)}")
         return
-    
+
+    if args.nfp:
+        service = FundamentalDataService()
+        try:
+            print("正在獲取美國NFP...")
+            nfp_data = service.fetch_and_store_nfp_us()
+            print(f"✓ 美國NFP最新資料: 日期={nfp_data['date']} 數值={nfp_data['value']}（千人）")
+            print("NFP已成功儲存")
+        except Exception as e:
+            print(f"✗ 美國NFP獲取失敗: {str(e)}")
+        return
+
     if not args.symbols:
         print("請提供至少一個股票代號")
         print("範例: python main.py 2330 --tw")
         print("      python main.py AAPL --us")
+        print("      python main.py --nfp")
         return
     
     # 確定市場類型

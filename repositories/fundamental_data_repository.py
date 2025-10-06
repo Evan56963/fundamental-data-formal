@@ -12,6 +12,21 @@ class FundamentalDataRepository:
 
     def _ensure_table(self, market: str):
         table = self._get_table_name(market)
+        # CPI/NFP 資料表
+        if market in ['cpi_us', 'nfp_us']:
+            with pyodbc.connect(self.conn_str) as conn:
+                cursor = conn.cursor()
+                cursor.execute(f"""
+                    IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='{table}' AND xtype='U')
+                    CREATE TABLE {table} (
+                        date NVARCHAR(20) PRIMARY KEY,
+                        value FLOAT,
+                        lastUpdate DATETIME DEFAULT GETDATE()
+                    )
+                """)
+                conn.commit()
+            return
+
         with pyodbc.connect(self.conn_str) as conn:
             cursor = conn.cursor()
             cursor.execute(f"""
@@ -66,16 +81,43 @@ class FundamentalDataRepository:
         table = self._get_table_name(market)
         with pyodbc.connect(self.conn_str) as conn:
             cursor = conn.cursor()
+            # --- CPI/NFP更新區塊 ---
+            if market in ['cpi_us', 'nfp_us']:
+                cursor.execute(f"SELECT value FROM {table} WHERE date=?", data['date'])
+                row = cursor.fetchone()
+                if row:
+                    if float(row[0]) != float(data['value']):
+                        cursor.execute(
+                            f"UPDATE {table} SET value=?, lastUpdate=GETDATE() WHERE date=?",
+                            data['value'], data['date']
+                        )
+                        conn.commit()
+                        return None
+                    return "✗ 資料已存在且無變動"
+                cursor.execute(
+                    f"INSERT INTO {table} (date, value) VALUES (?, ?)",
+                    data['date'], data['value']
+                )
+                conn.commit()
+                return None
+            # --- 股票更新區塊 ---
             symbol = data['symbol']
-            # 檢查是否已存在
-            cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE symbol=?", symbol)
-            exists = cursor.fetchone()[0] > 0
-
-            if exists:
-                # 已存在則不重複匯入
-                return
+            cursor.execute(f"SELECT * FROM {table} WHERE symbol=?", symbol)
+            row = cursor.fetchone()
+            if row:
+                columns = list(data.keys())
+                db_values = [row[i] for i in range(len(columns))]
+                new_values = [data[k] for k in columns]
+                if db_values != new_values:
+                    set_clause = ','.join([f"{col}=?" for col in columns])
+                    cursor.execute(
+                        f"UPDATE {table} SET {set_clause}, lastUpdate=GETDATE() WHERE symbol=?",
+                        *new_values, symbol
+                    )
+                    conn.commit()
+                    return None
+                return "✗ 資料已存在且無變動"
             else:
-                # INSERT
                 columns = ','.join(data.keys())
                 placeholders = ','.join(['?' for _ in data])
                 values = list(data.values())
@@ -84,3 +126,4 @@ class FundamentalDataRepository:
                     *values
                 )
             conn.commit()
+            return None

@@ -26,5 +26,26 @@ class FundamentalDataService:
     def fetch_and_store(self, ticker: str, market: str):
         ticker_with_suffix = self._get_ticker_with_suffix(ticker, market)
         data = self.provider.get_fundamental_data(ticker_with_suffix)
-        self.repository.save_fundamental_data(market, data)
-        return data
+        before = self.repository.save_fundamental_data(market, data)
+        if before is None:
+            return data, "✓ 儲存成功"
+        else:
+            return data, before
+
+    def fetch_and_store_cpi_us(self):
+        """取得並儲存美國CPI資料"""
+        data = self.provider.get_cpi_us()
+        before = self.repository.save_fundamental_data('cpi_us', data)
+        if before is None:
+            return data, "✓ CPI儲存成功"
+        else:
+            return data, before
+
+    def fetch_and_store_nfp_us(self):
+        """取得並儲存美國NFP資料"""
+        data = self.provider.get_nfp_us()
+        before = self.repository.save_fundamental_data('nfp_us', data)
+        if before is None:
+            return data, "✓ NFP儲存成功"
+        else:
+            return data, before

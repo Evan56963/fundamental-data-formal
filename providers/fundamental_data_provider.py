@@ -1,8 +1,16 @@
 import yfinance as yf
 from datetime import datetime
+from fredapi import Fred
+import os
+from dotenv import load_dotenv
 
 class FundamentalDataProvider:
     """基本面數據提供類"""
+    def __init__(self):
+        load_dotenv(dotenv_path=".env.local")
+        fred_api_key = os.getenv("FRED_API_KEY")
+        self.fred = Fred(api_key=fred_api_key) if fred_api_key else None
+
     def get_fundamental_data(self, ticker: str):
         stock = yf.Ticker(ticker)
         info = stock.info
@@ -62,3 +70,27 @@ class FundamentalDataProvider:
             'averageVolume': info.get('averageVolume'),
         }
         return data
+
+    def get_cpi_us(self):
+        """取得美國CPI資料 (消費者物價指數)"""
+        if not self.fred:
+            raise Exception("FRED API Key 未設定")
+        cpi_series = self.fred.get_series('CPIAUCSL')
+        latest_date = cpi_series.index[-1]
+        latest_value = cpi_series.iloc[-1]
+        return {
+            'date': str(latest_date.date()),
+            'value': float(latest_value)
+        }
+
+    def get_nfp_us(self):
+        """取得美國NFP資料 (非農就業人口)"""
+        if not self.fred:
+            raise Exception("FRED API Key 未設定")
+        nfp_series = self.fred.get_series('PAYEMS')
+        latest_date = nfp_series.index[-1]
+        latest_value = nfp_series.iloc[-1]
+        return {
+            'date': str(latest_date.date()),
+            'value': float(latest_value)
+        }

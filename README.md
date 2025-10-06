@@ -1,6 +1,6 @@
 # Fundamental-formal
 
-本專案是一個用於查詢並儲存股票、加密貨幣等資產的基本面資料的工具，支援台股、美股、台灣興櫃、加密貨幣、外匯等市場。資料來源主要為 Yahoo Finance，並儲存至 SQL Server 資料庫。
+本專案是一個用於查詢並儲存股票、加密貨幣等資產的基本面資料的工具，支援台股、美股、台灣興櫃、加密貨幣、外匯等市場，還有美國NFP、CPI。資料來源主要為 Yahoo Finance、FredAPI，並儲存至 SQL Server 資料庫。
 
 ## 主要功能
 
@@ -42,9 +42,19 @@ python main.py AAPL --us
 python main.py BTC --crypto
 ```
 
+查詢美國 CPI：
+```
+python main.py --cpi
+```
+
+查詢美國 NFP：
+```
+python main.py --nfp
+```
+
 顯示支援市場類型：
 ```
-python main.py --help-markets
+python main.py --help
 ```
 
 ## 資料庫設定
@@ -58,10 +68,11 @@ DB_NAME=database
 DB_USER=username
 DB_PASSWORD=password
 DB_DRIVER=ODBC Driver 17 for SQL Server
+FRED_API_KEY=API KEY
 ```
 ## 注意事項
 
-- 資料來源為 Yahoo Finance，部分指標可能因市場不同而缺漏。
+- 資料來源為 Yahoo Finance、FredAPI，部分指標可能因市場不同而缺漏。
 - 僅支援 SQL Server 資料庫。
 
 ---
