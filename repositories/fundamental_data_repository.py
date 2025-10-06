@@ -86,38 +86,40 @@ class FundamentalDataRepository:
                 cursor.execute(f"SELECT value FROM {table} WHERE date=?", data['date'])
                 row = cursor.fetchone()
                 if row:
+                    # 若 value 不同則匯入新資料
                     if float(row[0]) != float(data['value']):
                         cursor.execute(
                             f"UPDATE {table} SET value=?, lastUpdate=GETDATE() WHERE date=?",
                             data['value'], data['date']
                         )
                         conn.commit()
-                        return None
-                    return "✗ 資料已存在且無變動"
+                    return
                 cursor.execute(
                     f"INSERT INTO {table} (date, value) VALUES (?, ?)",
                     data['date'], data['value']
                 )
                 conn.commit()
-                return None
+                return
             # --- 股票更新區塊 ---
             symbol = data['symbol']
             cursor.execute(f"SELECT * FROM {table} WHERE symbol=?", symbol)
             row = cursor.fetchone()
             if row:
+                # 檢查是否有變動（只比對主要財務欄位）
                 columns = list(data.keys())
                 db_values = [row[i] for i in range(len(columns))]
                 new_values = [data[k] for k in columns]
                 if db_values != new_values:
+                    # 有變動則更新
                     set_clause = ','.join([f"{col}=?" for col in columns])
                     cursor.execute(
                         f"UPDATE {table} SET {set_clause}, lastUpdate=GETDATE() WHERE symbol=?",
                         *new_values, symbol
                     )
                     conn.commit()
-                    return None
-                return "✗ 資料已存在且無變動"
+                return
             else:
+                # INSERT
                 columns = ','.join(data.keys())
                 placeholders = ','.join(['?' for _ in data])
                 values = list(data.values())
@@ -126,4 +128,3 @@ class FundamentalDataRepository:
                     *values
                 )
             conn.commit()
-            return None
