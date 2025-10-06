@@ -152,5 +152,39 @@ def main():
         except Exception as e:
             print(f"✗ {symbol} 處理失敗: {str(e)}")
 
+def show_help():
+    """顯示幫助資訊"""
+    help_text = """
+🚀 基本面分析系統 - 使用說明
+
+基本用法:
+  python main.py [股票代號...][市場選項]
+
+市場選項:
+  --tw        台股 
+  --two       台股上櫃
+  --us        美股
+  --forex     外匯(資料可能不完整)
+  --crypto    加密貨幣(資料可能不完整)
+
+功能選項:
+  --help                顯示此幫助資訊
+
+使用範例:
+  python main.py --us AAPL # 查詢美股AAPL
+  python main.py AAPL --us # 查詢美股AAPL
+  python main.py --us AAPL TSLA  # 查詢美股AAPL、 TSLA 
+  python main.py AAPL TSLA --us  # 查詢美股AAPL、TSLA
+  python main.py 2330 --tw # 查詢台股2330
+  python main.py --tw 2330 2317  # 查詢台股2330、2317
+  python main.py 2330 2317 --tw  # 查詢台股2330、2317
+"""
+    print(help_text, flush=True)
+
+
 if __name__ == '__main__':
-    main()
+    # 檢查是否為幫助模式
+    if len(sys.argv) > 1 and sys.argv[1] in ["--help", "-h", "help"]:
+        show_help()
+    else:
+        main()
