@@ -51,13 +51,14 @@ python main.py --help-markets
 
 請於 `.env.local` 設定 SQL Server 連線資訊。
 
-'''環境變數範例
+環境變數範例
+```
 DB_SERVER=localhost
 DB_NAME=database
 DB_USER=username
 DB_PASSWORD=password
 DB_DRIVER=ODBC Driver 17 for SQL Server
-'''
+```
 ## 注意事項
 
 - 資料來源為 Yahoo Finance，部分指標可能因市場不同而缺漏。
