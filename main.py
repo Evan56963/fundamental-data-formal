@@ -94,7 +94,7 @@ def main():
     parser.add_argument('--crypto', action='store_true', help='加密貨幣')
     parser.add_argument('--forex', action='store_true', help='外匯')
     parser.add_argument('--futures', action='store_true', help='期貨')
-    parser.add_argument('--help-markets', action='store_true', help='顯示支援的市場類型')
+    #parser.add_argument('--help-markets', action='store_true', help='顯示支援的市場類型')
     
     args = parser.parse_args()
     
